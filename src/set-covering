@@ -1,0 +1,14 @@
+#lang racket
+(require "base")
+
+(define (gerar-populacao-inicial problema) problema)
+
+(define (escolher-reprodutores problema) problema)
+
+(define (cruzar-reprodutores problema) problema)
+
+(define (avaliar-filhos problema) problema)
+
+(define (gerar-mutacao problema) problema)
+
+(define (atualizar-populacao problema) problema)

@@ -1,0 +1,117 @@
+#lang racket
+(require racket/runtime-path)
+
+(provide (struct-out coluna)
+         (struct-out linha)
+         (struct-out problema)
+         make-params-list
+         make-coluna
+         make-linha
+         make-problema
+         get-qtdade-linhas
+         get-qtdade-colunas
+         get-densidade
+         get-linhas
+         get-colunas
+         )
+
+
+
+(struct coluna (id peso linhas) #:transparent)
+
+(struct linha (id) #:transparent)
+
+(struct problema (qtdade-linhas
+                  qtdade-colunas
+                  densidade
+                  linhas-livres 
+                  colunas  
+                  taxa-mutacao 
+                  populacao)
+  #:transparent)
+
+(define path-list 
+  (list "../testes/Teste_00.dat"
+        "../testes/Teste_01.txt"
+        "../testes/Teste_02.dat"
+        "../testes/Teste_03.dat"))
+
+(define (equal-linhas? str) 
+  (or (equal? str "linhas")
+      (equal? str "Linhas")
+      (equal? str "LINHAS")))
+
+(define (equal-colunas? str) 
+  (or (equal? str "colunas")
+      (equal? str "Colunas")
+      (equal? str "COLUNAS")))
+
+(define (equal-dados? str) 
+  (or (equal? str "dados")
+      (equal? str "Dados")
+      (equal? str "DADOS")))
+
+(define (equal-densidade? str) 
+  (or (equal? str "densidade")
+      (equal? str "Densidade")
+      (equal? str "DENSIDADE")))
+
+(define (get-param params c)
+  (cond [(empty? params) -1]
+        [(c (first params)) 
+        (string->number (second params))]
+        [else -1]))
+
+(define (get-qtdade-linhas params)
+  (get-param (list-ref params 0) equal-linhas?))
+
+(define (get-qtdade-colunas params)
+  (get-param (list-ref params 1) equal-colunas?))
+
+(define (get-densidade params)
+  (get-param (list-ref params 2) equal-densidade?))
+
+;;Devolve uma lista composta pelas linhas do arquivo
+(define (load-file-lines n)
+  (file->lines (list-ref path-list n)))
+
+;;Devolve uma lista composta pelos conjuntos de parametros de cada linha
+(define (make-params-list n)
+  (foldr cons-string-split empty (load-file-lines n)))
+
+(define (cons-string-split f r)
+  (cons (string-split f) r))
+
+;;Devolve a lista das colunas do problema
+(define (make-coluna lst)
+  (coluna (list-ref lst 0)
+          (list-ref lst 1)
+          (list-tail lst 2)))
+
+(define (cons-make-coluna f r)
+  (cons (make-coluna (map string->number f))  r))
+
+(define (get-colunas params)
+  (foldr cons-make-coluna empty (list-tail params 4)))
+
+;;Devolve a lista das linhas do problema
+(define (make-linha id)
+  (linha id))
+
+(define (add1-make-linha id)
+  (make-linha (add1 id) ))
+
+(define (get-linhas params) 
+  (build-list (get-qtdade-linhas params) 
+              add1))
+
+;;Devolve o problema
+(define (make-problema params)
+  (problema (get-qtdade-linhas params) 
+            (get-qtdade-colunas params)
+            (get-densidade params)
+            (get-linhas params)
+            (get-colunas params)
+            0.05
+            20
+            empty))
