@@ -1,0 +1,12 @@
+#lang racket
+
+(require "base")
+
+(define PARAMS_0 (make-params-list 0))
+PARAMS_0
+;;(get-qtdade-colunas PARAMS_0)
+;;(get-qtdade-linhas PARAMS_0)
+;;(get-densidade PARAMS_0)
+;;(get-colunas PARAMS_0)
+;;(get-linhas PARAMS_0)
+(make-problema PARAMS_0)
