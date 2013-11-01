@@ -1,5 +1,5 @@
 #lang racket
-
+(require "set-covering")
 (require "base")
 
 (define PARAMS_0 (make-params-list 0))
@@ -9,4 +9,4 @@ PARAMS_0
 ;;(get-densidade PARAMS_0)
 ;;(get-colunas PARAMS_0)
 ;;(get-linhas PARAMS_0)
-(make-problema PARAMS_0)
+(make-problema PARAMS_0  0.05 20 10 18000)

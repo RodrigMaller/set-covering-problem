@@ -15,8 +15,6 @@
          get-colunas
          )
 
-
-
 (struct coluna (id peso linhas) #:transparent)
 
 (struct linha (id) #:transparent)
@@ -26,7 +24,11 @@
                   densidade
                   linhas-livres 
                   colunas  
-                  taxa-mutacao 
+                  taxa-mutacao
+                  populacao-maxima
+                  qtdade-iteracoes
+                  tempo-limite
+                  tempo-inicial
                   populacao)
   #:transparent)
 
@@ -106,12 +108,19 @@
               add1))
 
 ;;Devolve o problema
-(define (make-problema params)
+(define (make-problema params 
+                       taxa-mutacao 
+                       populacao-maxima 
+                       qtdade-iteracoes 
+                       tempo-limite)
   (problema (get-qtdade-linhas params) 
             (get-qtdade-colunas params)
             (get-densidade params)
             (get-linhas params)
             (get-colunas params)
-            0.05
-            20
+            taxa-mutacao
+            populacao-maxima
+            qtdade-iteracoes
+            tempo-limite
+            (current-seconds)
             empty))
