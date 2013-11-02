@@ -1,7 +1,48 @@
 #lang racket
 (require "base")
 
-(define (gerar-populacao-inicial problema) problema)
+(provide escolher-linha
+         escolher-coluna
+         gerar-individuo
+         gerar-populacao-inicial
+         )
+
+(random-seed 13)
+
+;;escolhe uma coluna randomica que cubra a linha informada
+(define (escolher-coluna colunas linha)
+  
+  (define (contem-linha? coluna)
+    (ormap (λ (l) (equal? l linha)) 
+            (coluna-linhas-cobertas coluna)))
+  
+  (define colunas-que-cobrem-linha 
+    (filter contem-linha? colunas))
+  
+  (list-ref  colunas-que-cobrem-linha
+             (random (length colunas-que-cobrem-linha))))
+
+;;escolhe uma linha randomica
+(define (escolher-linha linhas)
+  (list-ref linhas (random (length linhas))))
+
+;;chama gerar individuo para uma lista de linhas-livres atualizada
+(define (cons-gerar-individuo coluna-escolhida colunas linhas-livres)
+  (cons coluna-escolhida 
+        (gerar-individuo colunas 
+                         (remove* (coluna-linhas-cobertas coluna-escolhida)
+                                  linhas-livres))))
+
+;;gera um individuo randomicamente para compor a populacao
+(define (gerar-individuo colunas linhas-livres)  
+  (cond [(empty? linhas-livres) empty]
+        [else (cons-gerar-individuo (escolher-coluna colunas 
+                                                     (escolher-linha linhas-livres))
+                                    colunas
+                                    linhas-livres)]))
+
+(define (gerar-populacao-inicial problema) 
+  problema)
 
 (define (escolher-reprodutores problema) problema)
 
