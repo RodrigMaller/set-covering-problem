@@ -108,11 +108,12 @@
               add1))
 
 ;;Devolve o problema
-(define (make-problema params 
-                       taxa-mutacao 
-                       populacao-maxima 
-                       qtdade-iteracoes 
-                       tempo-limite)
+(define 
+  (make-problema params 
+                 taxa-mutacao 
+                 populacao-maxima 
+                 qtdade-iteracoes 
+                 tempo-limite)
   (problema (get-qtdade-linhas params) 
             (get-qtdade-colunas params)
             (get-densidade params)

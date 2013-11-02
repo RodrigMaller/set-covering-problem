@@ -10,6 +10,7 @@
 ;;(get-colunas PARAMS_0)
 ;;(get-linhas PARAMS_0)
 (define P0 (make-problema PARAMS_0  0.05 20 10 18000))
-P0
-(gerar-individuo (problema-colunas P0) 
-                 (problema-linhas-livres P0))
+;;P0
+;(gerar-individuo (problema-colunas P0) (problema-linhas-livres P0))
+
+(gerar-populacao-inicial P0)
