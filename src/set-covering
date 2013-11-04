@@ -3,7 +3,7 @@
 
 (provide escolher-linha
          escolher-coluna
-         gerar-individuo
+         escolher-colunas
          gerar-populacao-inicial
          )
 
@@ -27,25 +27,27 @@
   (list-ref linhas (random (length linhas))))
 
 ;;chama gerar-individuo para uma lista de linhas-livres atualizada
-(define (cons-gerar-individuo coluna-escolhida colunas linhas-livres)
+(define (cons-escolher-colunas coluna-escolhida colunas linhas-livres)
   (cons coluna-escolhida 
-        (gerar-individuo colunas 
+        (escolher-colunas colunas 
                          (remove* (coluna-linhas-cobertas coluna-escolhida)
                                   linhas-livres))))
 
-;;gera um individuo randomicamente para compor a populacao
-(define (gerar-individuo colunas linhas-livres)  
+;;agrupa as colunas que formam um individuo
+(define (escolher-colunas colunas linhas-livres)  
   (cond [(empty? linhas-livres) empty]
-        [else (cons-gerar-individuo (escolher-coluna colunas (escolher-linha linhas-livres))
+        [else (cons-escolher-colunas (escolher-coluna colunas (escolher-linha linhas-livres))
                                     colunas
                                     linhas-livres)]))
+
 ;;gera a populacao inicial
 (define (gerar-populacao-inicial p)
   (struct-copy problema p 
-               [populacao 
-                (build-list (problema-populacao-maxima p)
-                            (λ (n) (gerar-individuo (problema-colunas p)
-                                                    (problema-linhas-livres p))))]))
+               [populacao (build-list (problema-populacao-maxima p)
+                          (λ (n) (make-individuo (escolher-colunas (problema-colunas p)
+                                                                   (problema-linhas-livres p)))))]))
+
+
 
 (define (escolher-reprodutores problema) problema)
 

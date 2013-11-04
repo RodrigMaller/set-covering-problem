@@ -12,5 +12,6 @@
 (define P0 (make-problema PARAMS_0  0.05 20 10 18000))
 ;;P0
 ;(gerar-individuo (problema-colunas P0) (problema-linhas-livres P0))
+(define POP (problema-populacao (gerar-populacao-inicial P0)))
+(sort POP (λ (x y) (< (individuo-peso x) (individuo-peso y)))) 
 
-(gerar-populacao-inicial P0)

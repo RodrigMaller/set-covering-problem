@@ -3,17 +3,24 @@
 
 (provide (struct-out coluna)
          (struct-out linha)
+         (struct-out individuo)
          (struct-out problema)
          make-params-list
          make-coluna
          make-linha
          make-problema
+         make-individuo
          get-qtdade-linhas
          get-qtdade-colunas
          get-densidade
          get-linhas
          get-colunas
          )
+
+(struct individuo (peso colunas) #:transparent)
+
+(define (make-individuo colunas)
+  (individuo (foldr (λ (f r) (+ (coluna-peso f) r)) 0 colunas)  colunas))
 
 (struct coluna (id peso linhas-cobertas) #:transparent)
 
