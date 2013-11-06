@@ -1,13 +1,16 @@
 #lang racket
 (require racket/runtime-path)
 
-(provide (struct-out coluna)
+(provide (struct-out casal)
+         (struct-out coluna)
          (struct-out linha)
+         (struct-out individuo)
          (struct-out problema)
          make-params-list
          make-coluna
          make-linha
          make-problema
+         make-individuo
          get-qtdade-linhas
          get-qtdade-colunas
          get-densidade
@@ -15,18 +18,27 @@
          get-colunas
          )
 
+(struct casal (x y) #:transparent)
 
+(struct individuo (peso colunas) #:transparent)
 
-(struct coluna (id peso linhas) #:transparent)
+(define (make-individuo colunas)
+  (individuo (foldr (λ (f r) (+ (coluna-peso f) r)) 0 colunas)  colunas))
+
+(struct coluna (id peso linhas-cobertas) #:transparent)
 
 (struct linha (id) #:transparent)
 
 (struct problema (qtdade-linhas
                   qtdade-colunas
                   densidade
-                  linhas-livres 
+                  linhas 
                   colunas  
-                  taxa-mutacao 
+                  taxa-mutacao
+                  populacao-maxima
+                  qtdade-iguais
+                  tempo-limite
+                  tempo-inicial
                   populacao)
   #:transparent)
 
@@ -106,12 +118,20 @@
               add1))
 
 ;;Devolve o problema
-(define (make-problema params)
+(define 
+  (make-problema params 
+                 taxa-mutacao 
+                 populacao-maxima 
+                 qtdade-iteracoes 
+                 tempo-limite)
   (problema (get-qtdade-linhas params) 
             (get-qtdade-colunas params)
             (get-densidade params)
             (get-linhas params)
             (get-colunas params)
-            0.05
-            20
+            taxa-mutacao
+            populacao-maxima
+            qtdade-iteracoes
+            tempo-limite
+            (current-seconds)
             empty))

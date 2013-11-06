@@ -1,11 +1,89 @@
 #lang racket
 (require "base")
 
-(define (gerar-populacao-inicial problema) problema)
+(provide escolher-linha
+         escolher-coluna
+         escolher-colunas
+         gerar-populacao-inicial
+         escolher-reprodutores
+         cruzar-casais
+         )
 
-(define (escolher-reprodutores problema) problema)
+(random-seed 13)
 
-(define (cruzar-reprodutores problema) problema)
+(define (randomizar-elemento lst)
+  (list-ref lst (random (length lst))))
+
+;;escolhe uma coluna randomica que cubra a linha informada
+(define (escolher-coluna colunas linha)
+  
+  (define (contem-linha? coluna)
+    (ormap (λ (l) (equal? l linha)) 
+           (coluna-linhas-cobertas coluna)))
+  
+  (define colunas-que-cobrem-linha 
+    (filter contem-linha? colunas))
+  
+  (list-ref  colunas-que-cobrem-linha
+             (random (length colunas-que-cobrem-linha))))
+
+;;escolhe uma linha randomica
+(define (escolher-linha linhas)
+  (randomizar-elemento linhas))
+
+;;agrupa em uma lista as colunas de um individuo
+(define (escolher-colunas colunas linhas-livres escolher)
+  (if (empty? linhas-livres) 
+      empty
+      ((λ (coluna-escolhida) 
+         (cons coluna-escolhida 
+               (escolher-colunas colunas 
+                                 (remove* (coluna-linhas-cobertas coluna-escolhida)
+                                          linhas-livres)
+                                 escolher))) 
+       (escolher colunas 
+                 (escolher-linha linhas-livres)))))
+
+(define (escolher-colunas-individuo colunas linhas-livres)
+  (escolher-colunas colunas linhas-livres escolher-coluna))
+
+;;gera a populacao inicial
+(define (gerar-populacao-inicial p)
+  (struct-copy problema p 
+               [populacao (build-list (problema-populacao-maxima p)
+                          (λ (n) (make-individuo (escolher-colunas-individuo (problema-colunas p)
+                                                                             (problema-linhas p)))))]))
+
+;;devolve a população ordenada pelo peso dos individuos
+(define (classificar-populacao pop)
+(sort pop (λ (x y) (< (individuo-peso x) 
+                      (individuo-peso y)))))
+
+;;
+(define (escolher-reprodutor pop)
+  (randomizar-elemento pop))
+
+;;
+(define (escolher-reprodutores p)
+  (define ordenados (classificar-populacao (problema-populacao p)))
+  (map (λ (x) (casal x (escolher-reprodutor ordenados)))
+       (take ordenados (arithmetic-shift (problema-populacao-maxima p) -1))))
+
+(define (escolher-pai casal)
+  (if (zero? (random 2)) 
+      (casal-x casal)
+      (casal-y casal)))
+
+(define (escolher-coluna-casal casal linha)
+  (escolher-coluna (individuo-colunas (escolher-pai casal)) linha))
+
+(define (combinar-colunas-casal casal linhas-livres)  
+  (escolher-colunas casal linhas-livres escolher-coluna-casal))
+
+;;produz uma lista de individuos filhos
+(define (cruzar-casais casais linhas-livres)
+  (map (λ (casal) (make-individuo (combinar-colunas-casal casal linhas-livres))) 
+       casais))
 
 (define (avaliar-filhos problema) problema)
 
