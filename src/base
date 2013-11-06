@@ -1,7 +1,8 @@
 #lang racket
 (require racket/runtime-path)
 
-(provide (struct-out coluna)
+(provide (struct-out casal)
+         (struct-out coluna)
          (struct-out linha)
          (struct-out individuo)
          (struct-out problema)
@@ -17,6 +18,8 @@
          get-colunas
          )
 
+(struct casal (x y) #:transparent)
+
 (struct individuo (peso colunas) #:transparent)
 
 (define (make-individuo colunas)
@@ -29,11 +32,11 @@
 (struct problema (qtdade-linhas
                   qtdade-colunas
                   densidade
-                  linhas-livres 
+                  linhas 
                   colunas  
                   taxa-mutacao
                   populacao-maxima
-                  qtdade-iteracoes
+                  qtdade-iguais
                   tempo-limite
                   tempo-inicial
                   populacao)
