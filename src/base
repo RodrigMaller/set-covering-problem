@@ -33,7 +33,9 @@
                   qtdade-colunas
                   densidade
                   linhas 
-                  colunas  
+                  colunas
+                  numero-estruturas-vnd
+                  numero-vizinhos-vnd
                   taxa-mutacao
                   populacao-maxima
                   qtdade-iguais
@@ -120,6 +122,8 @@
 ;;Devolve o problema
 (define 
   (make-problema params 
+                 numero-estruturas-vnd
+                 numero-vizinhos-vnd
                  taxa-mutacao 
                  populacao-maxima 
                  qtdade-iteracoes 
@@ -129,6 +133,8 @@
             (get-densidade params)
             (get-linhas params)
             (get-colunas params)
+            numero-estruturas-vnd
+            numero-vizinhos-vnd
             taxa-mutacao
             populacao-maxima
             qtdade-iteracoes

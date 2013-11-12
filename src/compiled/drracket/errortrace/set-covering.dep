@@ -1,0 +1,1 @@
+("5.3.5" ("5237fbb45690998b83f9ce21fde46f39a89d9b0e" . "a82bc015762d81f43a16e829e1f0b368e01ab0c7") #"/home/rodrigo/Dropbox/Ciencia da Computa\303\247\303\243o/3\302\272 Ano/2\302\272 Semestre/Model. e Otimi. Alg/set-covering-problem/src/base" (collects #"racket" #"main.rkt") (collects #"racket" #"lang" #"reader.rkt"))
