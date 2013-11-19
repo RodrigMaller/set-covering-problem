@@ -1,57 +1,12 @@
 #lang racket
 (require "base")
+(require "filhos")
+(require "mutacao")
+(require "vnd")
 
-(provide escolher-linha
-         escolher-coluna
-         escolher-colunas
-         gerar-populacao-inicial
-         escolher-reprodutores
-         cruzar-casais
-         mutacao
-         mutar-filho
-         mutar
-         executa-vnd
-         atualizar-populacao
-         )
+(provide set-covering-algorithm)
 
 (random-seed 13)
-
-;; randomiza elemento de uma lista
-(define (randomizar-elemento lst)
-  (list-ref lst (random (length lst))))
-
-;; escolhe uma coluna randomica em colunas que cubra a linha informada
-(define (escolher-coluna colunas linha)
-  
-  (define (contem-linha? coluna)
-    (ormap (λ (l) (equal? l linha)) 
-           (coluna-linhas-cobertas coluna)))
-  
-  (define colunas-que-cobrem-linha 
-    (filter contem-linha? colunas))
-  
-  (list-ref colunas-que-cobrem-linha
-            (random (length colunas-que-cobrem-linha))))
-
-;; escolhe uma linha randomica
-(define (escolher-linha linhas)
-  (randomizar-elemento linhas))
-
-;; agrupa em uma lista as colunas de um individuo
-(define (escolher-colunas colunas linhas-livres escolher)
-  (if (empty? linhas-livres) 
-      empty
-      ((λ (coluna-escolhida) 
-         (cons coluna-escolhida 
-               (escolher-colunas colunas
-                                 (remove* (coluna-linhas-cobertas coluna-escolhida)
-                                          linhas-livres)
-                                 escolher))) 
-       (escolher colunas
-                 (escolher-linha linhas-livres)))))
-
-(define (escolher-colunas-individuo colunas linhas-livres)
-  (escolher-colunas colunas linhas-livres escolher-coluna))
 
 ;; gera a populacao inicial
 (define (gerar-populacao-inicial p)
@@ -60,105 +15,100 @@
                           (λ (n) (make-individuo (escolher-colunas-individuo (problema-colunas p)
                                                                              (problema-linhas p)))))]))
 
-;; devolve a população ordenada pelo peso dos individuos
-(define (classificar-populacao pop)
-(sort pop (λ (x y) (< (individuo-peso x) 
-                      (individuo-peso y)))))
-
-;; separa a populacao pela metade pegando os melhores
-(define (metade-melhores pop-max pop)
-  (define ordenados (classificar-populacao pop))
-  (take ordenados (arithmetic-shift pop-max -1)))
-
-;; escolhe um reprodutor randomico da população
-(define (escolher-reprodutor pop)
-  (randomizar-elemento pop))
-
-;; retorna a metade da população ordenada pelo peso dos individuos
-(define (escolher-reprodutores p)
-  (define ordenados (classificar-populacao (problema-populacao p)))
-  (map (λ (x) (casal x (escolher-reprodutor ordenados)))
-       (metade-melhores (problema-populacao-maxima p) (problema-populacao p))))
-
-;; escolhe um dos 2 pais com 50% de chance de escolher cada
-(define (escolher-pai casal)
-  (if (zero? (random 2)) 
-      (casal-x casal)
-      (casal-y casal)))
-
-;; escolhe um coluna randomica de um pai randomico que cubra a linha
-(define (escolher-coluna-casal casal linha)
-  (escolher-coluna (individuo-colunas (escolher-pai casal)) linha))
-
-;; agrupa as colunas combinadas do casal, gerando um filho
-(define (combinar-colunas-casal casal linhas-livres)  
-  (escolher-colunas casal linhas-livres escolher-coluna-casal))
-
-;; produz uma lista de individuos filhos
-(define (cruzar-casais casais linhas-livres)
-  (map (λ (casal) (make-individuo (combinar-colunas-casal casal linhas-livres))) 
-       casais))
-
-;; faz a mutação no individuo
-(define (mutar indi colunas)
-  (define indi-colunas (individuo-colunas indi))
-  (define coluna-retirada (list-ref indi-colunas (random (length indi-colunas))))
-  (define colunas-restantes-indi (remove coluna-retirada indi-colunas))
-  (define colunas-restantes-prob (remove* colunas-restantes-indi colunas))
-  (define linhas-a-cobrir (coluna-linhas-cobertas coluna-retirada))
-  (define novas-colunas (escolher-colunas-individuo colunas-restantes-prob linhas-a-cobrir))
-  (define colunas-indi-novo (append novas-colunas colunas-restantes-indi))
-  (make-individuo colunas-indi-novo))
-
-;; muta individuo caso caia na porcetagem definida como parametro
-(define (mutar-filho filho taxa-mutacao colunas) 
-  (if (< (random 100) taxa-mutacao)
-      (mutar filho colunas)
-      filho))
-
-;; faz a mutação
-(define (mutacao filhos taxa-mutacao colunas)
-  (map (λ (filho)
-         (mutar-filho filho taxa-mutacao colunas))
-       filhos))
-
-;; gera um vizinho da solucao
-(define (gera-vizinho solucao r colunas)
-  (cond
-    [(zero? r) solucao]
-    [else (gera-vizinho (mutar solucao colunas) (sub1 r) colunas)]))
-
-;; gera os vizinhos da solucao
-(define (gera-vizinhos solucao prob)
-  (build-list (problema-numero-vizinhos-vnd prob)
-              (λ (n) (gera-vizinho solucao 
-                                   (problema-numero-estruturas-vnd prob)
-                                   (problema-colunas prob)))))
-
-;; gera os vizinhos e retorna o melhor
-(define (encontra-melhor-vizinho solucao prob)
-  (define vizinhos (gera-vizinhos solucao prob))
-  (first (classificar-populacao vizinhos)))
-
-;; executa o VND para uma solução
-(define (vnd k solucao prob)
-  (define r (problema-numero-estruturas-vnd prob))
-  (cond
-    [(<= k r) (define melhor-vizinho (encontra-melhor-vizinho solucao prob))
-              (if (< (individuo-peso melhor-vizinho) (individuo-peso solucao))
-                  (vnd 1 melhor-vizinho prob)
-                  (vnd (add1 k) solucao prob))]
-    [else solucao]))
-
-;; executa o VND para todos os filhos
-(define (executa-vnd filhos prob)
-  (map (λ (individuo) (vnd 1 individuo prob)) 
-       filhos))
-
 ;; faz a atualização da população para a proxima iteraçao
-(define (atualizar-populacao filhos problema) 
-  (define populacao-inteira (append filhos (problema-populacao problema)))
+(define (atualizar-populacao filhos prob) 
+  (define populacao-inteira (append filhos (problema-populacao prob)))
   (define populacao-ordenada (classificar-populacao populacao-inteira))
-  (take populacao-ordenada 20))
+  (struct-copy problema prob 
+               [populacao (take populacao-ordenada 
+                                (problema-populacao-maxima prob))])
+)
+
+(define (stop-by-time? ini fim)
+   (>= (- (current-seconds) ini) fim))
+
+(define (stop-by-solution? pop qtdade-iguais)
+  (define pop-ordenada (classificar-populacao pop))
+  (define first-peso (individuo-peso (first pop-ordenada)))
+  (define iguais (count (λ (i) (= (individuo-peso i) first-peso)) pop-ordenada))
+  (>= iguais qtdade-iguais))
+
+(define (novo-problema prob)
+  (define filhos (cruzar-casais (escolher-reprodutores prob) 
+                                (problema-linhas prob)))
+  (define mut-filhos (mutacao filhos 
+                              (problema-taxa-mutacao prob) 
+                              (problema-colunas prob)))
+  (define vnd-filhos (executa-vnd mut-filhos 
+                                  prob))
+  (atualizar-populacao vnd-filhos 
+                       prob)
+)
+
+
+(define (solucao prob)
+  (cond[(stop-by-solution? (problema-populacao prob) 
+                           (problema-qtdade-iguais prob)) prob]
+       [(stop-by-time? (problema-tempo-inicial prob)
+                       (problema-tempo-limite prob)) prob]
+       [else (solucao (novo-problema prob))]))
+
+(define (set-covering-algorithm 
+         file-id 
+         numero-estruturas-vnd
+         numero-vizinhos-vnd
+         taxa-mutacao 
+         populacao-maxima 
+         qtdade-iteracoes 
+         tempo-limite)
+  (define params (make-params-list file-id))
+  (define prob (make-problema 
+                params  
+                numero-estruturas-vnd
+                numero-vizinhos-vnd
+                taxa-mutacao 
+                populacao-maxima 
+                qtdade-iteracoes 
+                tempo-limite))
   
+  (define prob-ini (gerar-populacao-inicial prob))
+  
+  (define prob-final (solucao prob-ini))
+  
+  (resultados file-id prob-final)
+  
+)
+
+(define (resultados file-id prob-final)
+
+  #;(define filename (string-append "../resultados/teste" (number->string file-id) ".txt"))
+  
+  #;(display-to-file (problema-populacao prob-final) 
+                   filename
+                   #:mode 'text	 	 	 	 
+                   #:exists 'replace)
+  
+  (define out-list (list file-id
+                         (problema-taxa-mutacao prob-final)
+                         (problema-populacao-maxima prob-final)
+                         (problema-qtdade-iguais prob-final)
+                         (problema-tempo-limite prob-final)
+                         
+                         (- (current-seconds) 
+                            (problema-tempo-inicial prob-final))
+                         
+                         (individuo-peso 
+                          (first (classificar-populacao 
+                                  (problema-populacao prob-final))))))
+  
+  (define (out lst)
+    (foldr (λ (f r) (string-append " " (number->string f) r)) "" lst))
+  
+  (display-to-file (string-append "\n#" (out out-list))
+                   "../resultados/out.txt"	 	 	 	 
+                   #:mode 'text	 	 	 	 
+                   #:exists 'append)	
+  
+  out-list
+)
       

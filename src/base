@@ -16,6 +16,12 @@
          get-densidade
          get-linhas
          get-colunas
+         escolher-colunas-individuo
+         classificar-populacao
+         randomizar-elemento
+         escolher-coluna
+         escolher-colunas
+         
          )
 
 (struct casal (x y) #:transparent)
@@ -48,7 +54,13 @@
   (list "../testes/Teste_00.dat"
         "../testes/Teste_01.txt"
         "../testes/Teste_02.dat"
-        "../testes/Teste_03.dat"))
+        "../testes/Teste_03.dat"
+        "../testes/Teste_04.dat"
+        "../testes/Teste_05.dat"
+        "../testes/Wren_01.dat"
+        "../testes/Wren_02.dat"
+        "../testes/Wren_03.dat"
+        "../testes/Wren_04.dat"))
 
 (define (equal-linhas? str) 
   (or (equal? str "linhas")
@@ -84,6 +96,7 @@
 
 (define (get-densidade params)
   (get-param (list-ref params 2) equal-densidade?))
+
 
 ;;Devolve uma lista composta pelas linhas do arquivo
 (define (load-file-lines n)
@@ -141,3 +154,44 @@
             tempo-limite
             (current-seconds)
             empty))
+;; randomiza elemento de uma lista
+(define (randomizar-elemento lst)
+  (list-ref lst (random (length lst))))
+
+;; escolhe uma coluna randomica em colunas que cubra a linha informada
+(define (escolher-coluna colunas linha)
+  
+  (define (contem-linha? coluna)
+    (ormap (λ (l) (equal? l linha)) 
+           (coluna-linhas-cobertas coluna)))
+  
+  (define colunas-que-cobrem-linha 
+    (filter contem-linha? colunas))
+  
+  (list-ref colunas-que-cobrem-linha
+            (random (length colunas-que-cobrem-linha))))
+
+;; escolhe uma linha randomica
+(define (escolher-linha linhas)
+  (randomizar-elemento linhas))
+
+;; agrupa em uma lista as colunas de um individuo
+(define (escolher-colunas colunas linhas-livres escolher)
+  (if (empty? linhas-livres) 
+      empty
+      ((λ (coluna-escolhida) 
+         (cons coluna-escolhida 
+               (escolher-colunas colunas
+                                 (remove* (coluna-linhas-cobertas coluna-escolhida)
+                                          linhas-livres)
+                                 escolher))) 
+       (escolher colunas
+                 (escolher-linha linhas-livres)))))
+
+(define (escolher-colunas-individuo colunas linhas-livres)
+  (escolher-colunas colunas linhas-livres escolher-coluna))
+
+;; devolve a população ordenada pelo peso dos individuos
+(define (classificar-populacao pop)
+(sort pop (λ (x y) (< (individuo-peso x) 
+                      (individuo-peso y)))))
