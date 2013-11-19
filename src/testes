@@ -1,32 +1,11 @@
 #lang racket
 (require "set-covering")
 (require "base")
-
-(define PARAMS_0 (make-params-list 0))
-;; PARAMS_0
-;; (get-qtdade-colunas PARAMS_0)
-;; (get-qtdade-linhas PARAMS_0)
-;; (get-densidade PARAMS_0)
-;; (get-colunas PARAMS_0)
-;; (get-linhas PARAMS_0)
-
-(define P0 (make-problema PARAMS_0 2 20 5 20 10 18000))
-;; P0
-;; PARAMS_0
+;; id file
+;; vnd estruturas
+;; vnd vizinhos
 ;; taxa-mutacao (em porcentagem)
 ;; tamanho da população
 ;; qtdade de iguais para parada
 ;; tempo limite
-
-;; população inicial
-(define prob (gerar-populacao-inicial P0))
-;; seleção
-(define selecionados (escolher-reprodutores prob))
-;; cruzamento
-(define filhos (cruzar-casais selecionados (problema-linhas prob)))
-;; mutacao
-(define novos-filhos (mutacao filhos (problema-taxa-mutacao prob) (problema-colunas prob)))
-;; VND
-(define result-vnd (executa-vnd novos-filhos prob))
-;; atualização
-(atualizar-populacao result-vnd prob)
+(define melhor-resultado-1 (set-covering-algorithm 1 2 20 15 150 70 350))

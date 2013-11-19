@@ -1,0 +1,28 @@
+#lang racket
+(require "base")
+
+(provide mutar
+         mutacao)
+
+;; faz a mutação no individuo
+(define (mutar indi colunas)
+  (define indi-colunas (individuo-colunas indi))
+  (define coluna-retirada (list-ref indi-colunas (random (length indi-colunas))))
+  (define colunas-restantes-indi (remove coluna-retirada indi-colunas))
+  (define colunas-restantes-prob (remove* colunas-restantes-indi colunas))
+  (define linhas-a-cobrir (coluna-linhas-cobertas coluna-retirada))
+  (define novas-colunas (escolher-colunas-individuo colunas-restantes-prob linhas-a-cobrir))
+  (define colunas-indi-novo (append novas-colunas colunas-restantes-indi))
+  (make-individuo colunas-indi-novo))
+
+;; muta individuo caso caia na porcetagem definida como parametro
+(define (mutar-filho filho taxa-mutacao colunas) 
+  (if (< (random 100) taxa-mutacao)
+      (mutar filho colunas)
+      filho))
+
+;; faz a mutação
+(define (mutacao filhos taxa-mutacao colunas)
+  (map (λ (filho)
+         (mutar-filho filho taxa-mutacao colunas))
+       filhos))

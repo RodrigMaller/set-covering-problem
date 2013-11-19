@@ -1,0 +1,38 @@
+#lang racket
+(require "base")
+(require "mutacao")
+
+(provide executa-vnd)
+
+;; gera um vizinho da solucao
+(define (gera-vizinho solucao r colunas)
+  (cond
+    [(zero? r) solucao]
+    [else (gera-vizinho (mutar solucao colunas) (sub1 r) colunas)]))
+
+;; gera os vizinhos da solucao
+(define (gera-vizinhos solucao prob)
+  (build-list (problema-numero-vizinhos-vnd prob)
+              (λ (n) (gera-vizinho solucao 
+                                   (problema-numero-estruturas-vnd prob)
+                                   (problema-colunas prob)))))
+
+;; gera os vizinhos e retorna o melhor
+(define (encontra-melhor-vizinho solucao prob)
+  (define vizinhos (gera-vizinhos solucao prob))
+  (first (classificar-populacao vizinhos)))
+
+;; executa o VND para uma solução
+(define (vnd k solucao prob)
+  (define r (problema-numero-estruturas-vnd prob))
+  (cond
+    [(<= k r) (define melhor-vizinho (encontra-melhor-vizinho solucao prob))
+              (if (< (individuo-peso melhor-vizinho) (individuo-peso solucao))
+                  (vnd 1 melhor-vizinho prob)
+                  (vnd (add1 k) solucao prob))]
+    [else solucao]))
+
+;; executa o VND para todos os filhos
+(define (executa-vnd filhos prob)
+  (map (λ (individuo) (vnd 1 individuo prob)) 
+       filhos))

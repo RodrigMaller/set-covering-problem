@@ -1,0 +1,45 @@
+#lang racket
+(require "base")
+
+(provide cruzar-casais
+         escolher-reprodutores)
+
+;; separa a populacao pela metade pegando os melhores
+(define (metade-melhores pop-max pop)
+  (define ordenados (classificar-populacao pop))
+  (take ordenados (arithmetic-shift pop-max -1)))
+
+;; escolhe um reprodutor randomico da população
+(define (escolher-reprodutor pop)
+  (randomizar-elemento pop))
+
+;; retorna a casais
+(define (escolher-reprodutores p)
+  (define ordenados (classificar-populacao (problema-populacao p)))
+  (map (λ (x) (casal x (escolher-reprodutor ordenados)))
+       (metade-melhores (problema-populacao-maxima p) (problema-populacao p))))
+
+#;(define (escolher-reprodutores p)
+  (define pop (problema-populacao p))
+  (build-list (arithmetic-shift (problema-populacao-maxima p)  -1) 
+              (λ (x) (casal (escolher-reprodutor pop)
+                            (escolher-reprodutor pop)))))
+
+;; escolhe um dos 2 pais com 50% de chance de escolher cada
+(define (escolher-pai casal)
+  (if (zero? (random 2)) 
+      (casal-x casal)
+      (casal-y casal)))
+
+;; escolhe um coluna randomica de um pai randomico que cubra a linha
+(define (escolher-coluna-casal casal linha)
+  (escolher-coluna (individuo-colunas (escolher-pai casal)) linha))
+
+;; agrupa as colunas combinadas do casal, gerando colunas do filho
+(define (combinar-colunas-casal casal linhas-livres)  
+  (escolher-colunas casal linhas-livres escolher-coluna-casal))
+
+;; produz uma lista de individuos filhos
+(define (cruzar-casais casais linhas-livres)
+  (map (λ (casal) (make-individuo (combinar-colunas-casal casal linhas-livres))) 
+       casais))
